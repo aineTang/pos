@@ -8,6 +8,7 @@ function printInventory(inputs){
     var summary = countTotal(paidItems,gifts);
     printBuyedList(paidItems,gifts,summary);
 }
+
 /**
  * #1.计数
  * @param inputs
@@ -17,7 +18,7 @@ function getbuyedBarcodes(inputs){
     var buyedBarcodesObject = {};
     var buyedBarcodes = [];
     for (var i=0; i<inputs.length; i++){
-        if (inputs[i].indexOf('-' != "-1")){
+        if (inputs[i].indexOf('-') != "-1"){
             //包含“-”的情况
             var splitArray = inputs[i].split('-');
             var count = parseInt(splitArray[1]);
@@ -84,7 +85,7 @@ function getGifts(buyedItems){
     //再得到参加“买二赠一”活动的条形码数组
     for (var i=0; i<promotions.length; i++){
         if (promotions[i].type == 'BUY_TWO_GET_ONE_FREE'){
-            barcodes = promotions.barcodes;
+            barcodes = promotions[i].barcodes;
         }
     }
     //最后根据参加活动的条形码数组获取购买商品中的优惠数据
@@ -92,7 +93,7 @@ function getGifts(buyedItems){
         for (var j=0; j<buyedItems.length; j++){
             if (buyedItems[j].barcode == barcodes[i]){
                 //此时该商品参加“满二送一”的优惠活动
-                var freeCount = buyedItems[j].count / 3;
+                var freeCount = Math.floor(buyedItems[j].count / 3);
                 if (freeCount >= 1){
                     gifts.push({
                         barcode:buyedItems[j].barcode,
@@ -123,11 +124,11 @@ function getPaidItems(buyedItems,gifts){
             var subFreeTotal = 0;
             for (var i=0; i<gifts.length; i++){
                 if (gifts[i].barcode == item.barcode){
-                    subFreeTotal = item.price * gifts.count;
+                    subFreeTotal = item.price * gifts[i].count;
                     break;
                 }
             }
-            subtotal = item.price * item.count + subFreeTotal;
+            subtotal = item.price * item.count - subFreeTotal;
             paidItems.push({
                 name:item.name,
                 unit:item.unit,
@@ -144,12 +145,11 @@ function getPaidItems(buyedItems,gifts){
 /**
  * #5.计算总计和节省
  * @param paidItems
- * @param gifts
  */
-function countTotal(paidItems,gifts){
+function countTotal(paidItems){
     var summary = {
         total:0,
-        sava:0
+        save:0
     };
     if (paidItems && paidItems.length){
         paidItems.forEach(function (item){
@@ -166,23 +166,25 @@ function countTotal(paidItems,gifts){
  * @param summary
  */
 function printBuyedList(paidItems,gifts,summary){
-    console.log('***<没钱赚商店>购物清单***\n');
+    var logString = "";
+    logString += '***<没钱赚商店>购物清单***\n';
     if (paidItems && paidItems.length){
         paidItems.forEach(function(item){
-            console.log("名称："+item.name+"，数量："+item.count+item.unit+"，单价："+item.price+"（元），小计："+item.subtotal+"(元)\n");
+            logString += "名称："+item.name+"，数量："+item.count+item.unit+"，单价："+item.price.toFixed(2)+"（元），小计："+item.subtotal.toFixed(2)+"(元)\n";
         });
     }
-    console.log('----------------------\n');
-    console.log('挥泪赠送商品：\n');
+    logString += '----------------------\n';
+    logString += '挥泪赠送商品：\n';
     if (gifts && gifts.length){
         gifts.forEach(function (gift){
-            console.log("名称："+gift.name+"，数量："+gift.count+gift.unit+"\n");
+            logString += "名称："+gift.name+"，数量："+gift.count+gift.unit+"\n";
         });
     }
-    console.log('----------------------\n');
-    console.log("总计："+summary.total+"（元）\n");
-    console.log("总计："+summary.save+"（元）\n");
-    console.log('**********************');
+    logString += '----------------------\n';
+    logString += "总计："+summary.total.toFixed(2)+"（元）\n";
+    logString += "节省："+summary.save.toFixed(2)+"（元）\n";
+    logString += '**********************';
+    console.log(logString);
 }
 
 
